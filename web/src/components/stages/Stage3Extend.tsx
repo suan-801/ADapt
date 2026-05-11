@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useAppStore } from "@/store/useAppStore";
+import { useAppStore, PromptVariation } from "@/store/useAppStore";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -39,19 +38,22 @@ export function Stage3Extend() {
         let errMessage = "API 연동 오류";
         try {
           const errData = await response.json();
-          if (errData.error) errMessage = errData.error;
+          if (errData && typeof errData === 'object' && 'error' in errData) {
+            errMessage = String(errData.error);
+          }
         } catch { }
         throw new Error(errMessage);
       }
 
       const data = await response.json();
       
-      const prompts = Array.isArray(data.prompts) ? data.prompts : [];
+      const prompts = Array.isArray(data.prompts) ? (data.prompts as PromptVariation[]) : [];
       setExtendedPrompts(prompts);
       toast.success("프롬프트 확장이 완료되었습니다!");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      toast.error(error.message || "프롬프트 생성에 실패했습니다.");
+      const message = error instanceof Error ? error.message : "프롬프트 생성에 실패했습니다.";
+      toast.error(message);
     } finally {
       setIsGenerating(false);
     }
@@ -75,7 +77,7 @@ export function Stage3Extend() {
       <div className="text-center space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Step 3. 프롬프트 베리에이션 (Extend)</h2>
         <p className="text-muted-foreground">
-          "이렇게도 제작해보세요!" 원본 프롬프트를 바탕으로 다양한 시각적 테마의 아이디어를 제안합니다.
+          &quot;이렇게도 제작해보세요!&quot; 원본 프롬프트를 바탕으로 다양한 시각적 테마의 아이디어를 제안합니다.
         </p>
       </div>
 
@@ -121,7 +123,7 @@ export function Stage3Extend() {
                 </Button>
               </div>
               <div className="text-sm text-muted-foreground italic leading-relaxed">
-                "{item.prompt}"
+                &quot;{item.prompt}&quot;
               </div>
             </Card>
           ))}

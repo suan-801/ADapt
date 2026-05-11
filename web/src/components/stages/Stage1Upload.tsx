@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { UploadCloud, Image as ImageIcon, Loader2, Copy, FileText, Sparkles } from "lucide-react";
+import Image from "next/image";
 import { useAppStore } from "@/store/useAppStore";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -12,7 +13,7 @@ export function Stage1Upload() {
   const { 
     apiKey,
     sourceImage, setSourceImage, 
-    sourceImageBase64, setSourceImageBase64,
+    setSourceImageBase64,
     extractedText, setExtractedText,
     extractedPrompt, setExtractedPrompt 
   } = useAppStore();
@@ -66,7 +67,7 @@ export function Stage1Upload() {
         try {
           const errData = await response.json();
           if (errData.error) errMessage = errData.error;
-        } catch (e) {}
+        } catch { }
         throw new Error(errMessage);
       }
 
@@ -75,13 +76,14 @@ export function Stage1Upload() {
       setExtractedPrompt(data.imagePrompt);
       toast.success("이미지 분석이 완료되었습니다!");
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      toast.error(error.message || "이미지 분석에 실패했습니다.");
+      const message = error instanceof Error ? error.message : "이미지 분석에 실패했습니다.";
+      toast.error(message);
     } finally {
       setIsProcessing(false);
     }
-  }, [apiKey, setSourceImage, setExtractedText, setExtractedPrompt]);
+  }, [apiKey, setSourceImage, setSourceImageBase64, setExtractedText, setExtractedPrompt]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -123,9 +125,15 @@ export function Stage1Upload() {
               <ImageIcon className="h-4 w-4" />
               원본 소재
             </div>
-            <div className="relative rounded-md overflow-hidden bg-muted border">
+            <div className="relative rounded-md overflow-hidden bg-muted border h-[400px]">
               {sourceImage && (
-                <img src={sourceImage} alt="Source" className="object-contain w-full h-[400px]" />
+                <Image 
+                  src={sourceImage} 
+                  alt="Source" 
+                  fill
+                  className="object-contain" 
+                  unoptimized // blob URL은 최적화 불가하므로 unoptimized 사용
+                />
               )}
             </div>
           </Card>

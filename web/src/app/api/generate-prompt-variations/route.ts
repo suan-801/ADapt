@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenerativeAI, Part } from '@google/generative-ai'
 
 type PromptVariation = {
   type: string
@@ -52,12 +52,12 @@ ${characterConstraint}
 }`
 
   // 이미지 데이터 처리 (있는 경우에만 전달)
-  const content = [{ text: prompt }];
+  const content: Part[] = [{ text: prompt }];
   if (image) {
     const isDataUrl = image.startsWith('data:');
     const data = isDataUrl ? image.split(',')[1] : image;
     const mimeType = isDataUrl ? (image.match(/data:([^;]+)/)?.[1] ?? 'image/jpeg') : 'image/jpeg';
-    content.push({ inlineData: { data, mimeType } } as any); // SDK 내부 타입 호환을 위해 일단 any 유지하되 변수 선언에서는 제거
+    content.push({ inlineData: { data, mimeType } });
   }
 
   const result = await model.generateContent(content)

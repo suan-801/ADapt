@@ -1,6 +1,17 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+export type AdCopy = {
+  headline: string;
+  body?: string;
+  cta: string;
+}
+
+export type PromptVariation = {
+  type: string;
+  prompt: string;
+}
+
 interface AppState {
   apiKey: string | null;
   setApiKey: (key: string) => void;
@@ -20,11 +31,11 @@ interface AppState {
   targetMedia: 'daangn' | 'kakao' | 'gfa' | 'toss' | null;
   setTargetMedia: (media: 'daangn' | 'kakao' | 'gfa' | 'toss' | null) => void;
   
-  generatedTexts: any[];
-  setGeneratedTexts: (texts: any[]) => void;
+  generatedTexts: AdCopy[];
+  setGeneratedTexts: (texts: AdCopy[]) => void;
   
-  extendedPrompts: { type: string; prompt: string }[];
-  setExtendedPrompts: (prompts: { type: string; prompt: string }[]) => void;
+  extendedPrompts: PromptVariation[];
+  setExtendedPrompts: (prompts: PromptVariation[]) => void;
   
   keepCharacter: boolean;
   setKeepCharacter: (keep: boolean) => void;

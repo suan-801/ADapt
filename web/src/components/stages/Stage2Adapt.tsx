@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAppStore } from "@/store/useAppStore";
+import { useAppStore, AdCopy } from "@/store/useAppStore";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -46,28 +46,33 @@ export function Stage2Adapt() {
         let errMessage = "API 연동 오류";
         try {
           const errData = await response.json();
-          if (errData.error) errMessage = errData.error;
+          if (errData && typeof errData === 'object' && 'error' in errData) {
+            errMessage = String(errData.error);
+          }
         } catch { }
         throw new Error(errMessage);
       }
 
       const data = await response.json();
       
-      let variations: any[] = [];
+      let variations: AdCopy[] = [];
       if (Array.isArray(data.copies)) {
         variations = data.copies;
       } else if (Array.isArray(data.variations)) {
         // 이전 API 하위호환
-        variations = data.variations.map((v: any) => typeof v === 'string' ? { body: v } : v);
+        variations = data.variations.map((v: string | AdCopy) => 
+          typeof v === 'string' ? { headline: '', body: v, cta: '' } : v
+        );
       } else {
-        variations = [{ body: data.variations || data.message || "결과가 없습니다." }];
+        variations = [{ headline: '', body: data.variations || data.message || "결과가 없습니다.", cta: '' }];
       }
       
       setGeneratedTexts(variations);
       toast.success("매체 최적화 카피가 생성되었습니다!");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      toast.error(error.message || "카피 생성에 실패했습니다.");
+      const message = error instanceof Error ? error.message : "카피 생성에 실패했습니다.";
+      toast.error(message);
     } finally {
       setIsGenerating(false);
     }
