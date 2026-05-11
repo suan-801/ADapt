@@ -40,7 +40,7 @@ export function Stage3Extend() {
         try {
           const errData = await response.json();
           if (errData.error) errMessage = errData.error;
-        } catch (e) {}
+        } catch { }
         throw new Error(errMessage);
       }
 
