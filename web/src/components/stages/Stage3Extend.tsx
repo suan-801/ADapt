@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useAppStore, PromptVariation } from "@/store/useAppStore";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
