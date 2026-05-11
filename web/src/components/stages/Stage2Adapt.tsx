@@ -168,24 +168,24 @@ export function Stage2Adapt() {
           
           <div className="grid gap-6">
             {generatedTexts.map((item, idx) => {
-              // 이전 하위호환을 위한 방어 코드
-              const isString = typeof item === 'string';
-              const textContent = isString ? item : `[헤드라인] ${item.headline}\n[본문] ${item.body}\n[버튼] ${item.cta}`;
+              const headline = item.headline || "";
+              const body = item.body || "";
+              const cta = item.cta || "";
+              const textContent = `[헤드라인] ${headline}\n[본문] ${body}\n[버튼] ${cta}`;
               
-              if (isString || !item.headline) {
+              if (!headline) {
                 return (
                   <div key={idx} className="flex items-center justify-between p-4 bg-background border rounded-lg shadow-sm">
-                    <p className="text-sm font-medium whitespace-pre-wrap leading-relaxed">{item.body || item}</p>
-                    <Button variant="ghost" size="sm" onClick={() => copyToClipboard(item.body || item)} className="shrink-0 ml-4">
+                    <p className="text-sm font-medium whitespace-pre-wrap leading-relaxed">{body}</p>
+                    <Button variant="ghost" size="sm" onClick={() => copyToClipboard(body)} className="shrink-0 ml-4">
                       <Copy className="h-4 w-4 mr-2" /> 복사
                     </Button>
                   </div>
                 );
               }
 
-              // 3번 요청사항: 몇 자인지 노출하여 가이드 체크
-              const hLen = item.headline?.length || 0;
-              const bLen = item.body?.length || 0;
+              const hLen = headline.length;
+              const bLen = body.length;
 
               return (
                 <div key={idx} className="relative p-5 bg-background border rounded-xl shadow-sm space-y-4">
@@ -200,7 +200,7 @@ export function Stage2Adapt() {
                       <span className="text-xs font-bold bg-primary/10 text-primary px-2 py-0.5 rounded">헤드라인</span>
                       <span className="text-xs text-muted-foreground">({hLen}자)</span>
                     </div>
-                    <p className="text-sm font-medium">{item.headline}</p>
+                    <p className="text-sm font-medium">{headline}</p>
                   </div>
                   
                   <div>
@@ -208,15 +208,15 @@ export function Stage2Adapt() {
                       <span className="text-xs font-bold bg-secondary text-secondary-foreground px-2 py-0.5 rounded">본문</span>
                       <span className="text-xs text-muted-foreground">({bLen}자)</span>
                     </div>
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{item.body}</p>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{body}</p>
                   </div>
 
-                  {item.cta && (
+                  {cta && (
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs font-bold bg-accent text-accent-foreground px-2 py-0.5 rounded">버튼(CTA)</span>
                       </div>
-                      <p className="text-sm font-medium text-primary">{item.cta}</p>
+                      <p className="text-sm font-medium text-primary">{cta}</p>
                     </div>
                   )}
                 </div>
