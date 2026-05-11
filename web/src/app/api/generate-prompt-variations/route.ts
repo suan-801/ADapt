@@ -52,12 +52,12 @@ ${characterConstraint}
 }`
 
   // 이미지 데이터 처리 (있는 경우에만 전달)
-  const content: any[] = [{ text: prompt }];
+  const content = [{ text: prompt }];
   if (image) {
     const isDataUrl = image.startsWith('data:');
     const data = isDataUrl ? image.split(',')[1] : image;
     const mimeType = isDataUrl ? (image.match(/data:([^;]+)/)?.[1] ?? 'image/jpeg') : 'image/jpeg';
-    content.push({ inlineData: { data, mimeType } });
+    content.push({ inlineData: { data, mimeType } } as any); // SDK 내부 타입 호환을 위해 일단 any 유지하되 변수 선언에서는 제거
   }
 
   const result = await model.generateContent(content)
@@ -96,8 +96,8 @@ export async function POST(request: NextRequest) {
       generatedAt: new Date().toISOString(),
       engine: 'gemini-flash-latest',
     })
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '알 수 없는 오류'
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error)
     return NextResponse.json(
       { error: `프롬프트 변형 생성 중 오류가 발생했습니다: ${message}` },
       { status: 500 }

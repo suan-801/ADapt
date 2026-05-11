@@ -82,20 +82,22 @@ export async function POST(request: NextRequest) {
       analyzedAt: new Date().toISOString(),
       engine: 'gemini-flash-latest',
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[analyze-image] Error:', error)
     
-    // 만약 404 모델 에러라면 사용 가능한 모델 목록을 조회해서 알려줍니다.
     let availableModels = "";
-    if (error.message?.includes('404 Not Found') || error.message?.includes('is not found')) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+
+    if (errorMsg.includes('404 Not Found') || errorMsg.includes('is not found')) {
       try {
         const apiKey = parseAuthHeader(request);
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-        const data = await res.json();
+        const data = await res.json() as { models?: Array<{ name: string; supportedGenerationMethods: string[] }> };
+        
         if (data && data.models) {
           const modelNames = data.models
-            .filter((m: any) => m.supportedGenerationMethods?.includes('generateContent'))
-            .map((m: any) => m.name.replace('models/', ''))
+            .filter(m => m.supportedGenerationMethods?.includes('generateContent'))
+            .map(m => m.name.replace('models/', ''))
             .join(', ');
           availableModels = `\n[사용 가능한 모델 리스트]: ${modelNames}`;
         }
@@ -104,9 +106,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const message = error instanceof Error ? error.message : '알 수 없는 오류'
     return NextResponse.json(
-      { error: `API 오류: ${message} ${availableModels}` },
+      { error: `API 오류: ${errorMsg} ${availableModels}` },
       { status: 500 }
     )
   }
